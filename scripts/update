@@ -4,4 +4,5 @@ git clone https://github.com/bitus/irnfbundle.git
 
 sudo docker pull ghcr.io/iron-fish/ironfish:latest
 
-sudo docker compose -f irnfbundle/docker-compose.yml build && docker compose -f irnfbundle/docker-compose.yml up -d
+sudo docker compose -f irnfbundle/docker-compose.yml build
+# docker compose -f irnfbundle/docker-compose.yml up -d

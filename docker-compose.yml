@@ -3,6 +3,20 @@ version: '3.7'
 networks:
   app-tier:
 
+volumes:
+  data_prometheus: 
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './../data/postgres'
+  data_grafana: 
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './../data/grafana'
+
 services:
   ironfish:
     build:
@@ -14,14 +28,14 @@ services:
     tty: true
     network_mode: host
     volumes:
-      - ../data/ironfish:/root/.ironfish
+      - ./../data/ironfish:/root/.ironfish
 
   prometheus:
     image: prom/prometheus
     restart: always
     volumes:
+      - data_prometheus:/prometheus
       - ./prometheus/config/prometheus:/etc/prometheus
-      - ../data/prometheus:/prometheus
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     command:
@@ -55,12 +69,10 @@ services:
     image: grafana/grafana-enterprise
     restart: always
     user: "472"
-    depends_on:
-      - prometheus
     ports:
       - 3000:3000
     volumes:
-      - ../data/grafana:/var/lib/grafana
+      - data_grafana:/var/lib/grafana
       - ./grafana/config/provisioning/:/etc/grafana/provisioning/
       - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
       - /etc/timezone:/etc/timezone:ro
