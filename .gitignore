@@ -1,0 +1,8 @@
+.files
+.temp
+*.bak
+*.tmp
+temp
+dist
+node_modules
+data

@@ -1,0 +1,10 @@
+route:
+  receiver: 'telegram'
+
+receivers:
+  - name: 'telegram'
+#       slack_configs:
+#           - send_resolved: true
+#             username: '<username>'
+#             channel: '#<channel-name>'
+#             api_url: '<incomming-webhook-url>'
