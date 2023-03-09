@@ -1,5 +1,6 @@
 
 import express from "express";
+import * as process from "process";
 import { puller } from "./lib/data_puller";
 
 //const { exec } = require('node:child_process')

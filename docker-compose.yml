@@ -48,8 +48,6 @@ services:
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
-    depends_on:
-      - prometheus
     networks:
       - app-tier     
 
@@ -63,12 +61,12 @@ services:
       - 3000:3000
     volumes:
       - ../data/grafana:/var/lib/grafana
-      - ./graphana/config/provisioning/:/etc/grafana/provisioning/
-      - ./graphana/config/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/config/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - ./graphana/config/config.monitoring
+      - ./grafana/config/config.monitoring
     networks:
       - app-tier
  

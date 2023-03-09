@@ -4,8 +4,8 @@ cp start ../../
 cp stop ../../
 cp update ../../
 
-chmod +x backup
-chmod +x build
-chmod +x start
-chmod +x stop
-chmod +x update
+chmod +x ../../backup
+chmod +x ../../build
+chmod +x ../../start
+chmod +x ../../stop
+chmod +x ../../update
