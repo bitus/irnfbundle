@@ -1,3 +1,6 @@
+mkdir -p data/grafana
+mkdir -p data/prometeus
+
 sudo docker compose -f irnfbundle/docker-compose.yml down
 rm -rf irnfbundle
 git clone https://github.com/bitus/irnfbundle.git

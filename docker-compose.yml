@@ -9,7 +9,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: './../data/postgres'
+      device: './../data/prometheus'
   data_grafana: 
     driver: local
     driver_opts:
