@@ -1,0 +1,5 @@
+mkdir backups
+
+D=`date +"%Y-%m-%d-%H-%M-%s"`
+sudo zip -r "irnfbundle-bak-$D.zip" irnfbundle -x *.zip
+sudo zip -r "irnfbundle-bak-$D.data.zip" data

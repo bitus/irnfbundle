@@ -1,0 +1,1 @@
+sudo docker compose -f irnfbundle/docker-compose.yml build

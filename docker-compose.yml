@@ -14,14 +14,14 @@ services:
     tty: true
     network_mode: host
     volumes:
-      - ./ironfish/data:/root/.ironfish
+      - ../data/ironfish:/root/.ironfish
 
   prometheus:
     image: prom/prometheus
     restart: always
     volumes:
       - ./prometheus/config/prometheus:/etc/prometheus
-      - ./prometheus/data:/prometheus
+      - ../data/prometheus:/prometheus
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     command:
@@ -62,7 +62,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/data:/var/lib/grafana
+      - ../data/grafana:/var/lib/grafana
       - ./graphana/config/provisioning/:/etc/grafana/provisioning/
       - ./graphana/config/grafana.ini:/etc/grafana/grafana.ini
       - /etc/timezone:/etc/timezone:ro
