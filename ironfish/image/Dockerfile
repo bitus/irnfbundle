@@ -8,7 +8,7 @@ RUN pm2 startup
 WORKDIR /usr/src/ironfish.metrics
 
 COPY ironfish.metrics/package.* .
-NODE_ENV=production RUN npm install
+RUN NODE_ENV=production RUN npm install
 
 COPY ironfish.metrics .
 
