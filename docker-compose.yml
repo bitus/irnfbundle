@@ -43,19 +43,11 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-#    ports:
-#      - 9090:9090
     network_mode: host
-    links:
-      - alertmanager:alertmanager
-#    networks:
-#      - app-tier
 
   alertmanager:
     image: prom/alertmanager
     restart: always
-#    ports:
-#      - 9093:9093
     network_mode: host
     volumes:
       - ./prometheus/config/alertmanager:/etc/alertmanager
@@ -64,16 +56,12 @@ services:
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
-#    networks:
-#      - app-tier     
 
   grafana:
     image: grafana/grafana-enterprise
     restart: always
     user: "472"
     network_mode: host
-#    ports:
-#      - 3000:3000
     volumes:
       - data_grafana:/var/lib/grafana
       - ./grafana/config/provisioning/:/etc/grafana/provisioning/
@@ -82,6 +70,4 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - ./grafana/config/config.monitoring
-#    networks:
-#      - app-tier
  
