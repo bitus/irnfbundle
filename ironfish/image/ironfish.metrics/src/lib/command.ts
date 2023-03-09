@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import { TelemetryData } from "./data";
 
-const debug = true;
+const debug = false;
 
 function toKb(data: string | number, unit: string = ''): number {
     if (data) {

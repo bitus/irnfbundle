@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IronfishAccountBalance = exports.IronfishStatus = exports.IfstatCommand = exports.FreeCommand = exports.MpstatCommand = exports.DfCommand = exports.Command = void 0;
 const node_child_process_1 = require("node:child_process");
-const debug = true;
+const debug = false;
 function toKb(data, unit = '') {
     if (data) {
         if (typeof data === 'string') {
