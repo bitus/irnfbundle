@@ -1,38 +1,64 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TelemetryData = void 0;
+exports.IronfishData = exports.IronfishWalletData = exports.DiskData = exports.NetworkData = exports.MemoryData = exports.CpuData = exports.TelemetryDataItem = exports.TelemetryData = void 0;
 class TelemetryData {
-    system = new SystemData();
-    ironfish = new IronfishData();
-}
-exports.TelemetryData = TelemetryData;
-class SystemData {
     cpu = new CpuData();
     memory = new MemoryData();
     disk = new DiskData();
     network = new NetworkData();
+    ironfish = new IronfishData();
+    wallet = new IronfishWalletData();
+    assign(item) {
+        if (item instanceof CpuData) {
+            this.cpu = item;
+        }
+        else if (item instanceof MemoryData) {
+            this.memory = item;
+        }
+        else if (item instanceof DiskData) {
+            this.disk = item;
+        }
+        else if (item instanceof NetworkData) {
+            this.network = item;
+        }
+        else if (item instanceof IronfishData) {
+            this.ironfish = item;
+        }
+        else if (item instanceof IronfishWalletData) {
+            this.wallet = item;
+        }
+    }
 }
-class CpuData {
+exports.TelemetryData = TelemetryData;
+class TelemetryDataItem {
+}
+exports.TelemetryDataItem = TelemetryDataItem;
+class CpuData extends TelemetryDataItem {
     cores = 0;
     utilization = 0.0;
     cores_utilization = [];
 }
-class MemoryData {
+exports.CpuData = CpuData;
+class MemoryData extends TelemetryDataItem {
     free = 0;
     used = 0;
     total = 0;
     utilization = 0;
 }
-class NetworkData {
+exports.MemoryData = MemoryData;
+class NetworkData extends TelemetryDataItem {
     input = 0;
     output = 0;
 }
-class DiskData {
+exports.NetworkData = NetworkData;
+class DiskData extends TelemetryDataItem {
+    name;
     free = 0;
     used = 0;
     total = 0;
     utilization = 0.0;
 }
+exports.DiskData = DiskData;
 class IronfishVersionData {
     current = '';
     latest = '';
@@ -80,14 +106,15 @@ class IronfishWorkersPoolData {
     active = false;
     jobs_per_second = 0.0;
 }
-class IronfishWalletPoolData {
+class IronfishWalletData extends TelemetryDataItem {
+    address;
     balance = 0.0;
 }
-class IronfishData {
+exports.IronfishWalletData = IronfishWalletData;
+class IronfishData extends TelemetryDataItem {
     status = '';
     active = false;
     version = new IronfishVersionData();
-    wallet = new IronfishWalletPoolData();
     memory = new IronfishMemoryData();
     cpu = new IronfishCpuData();
     p2p = new IronfishP2pData();
@@ -97,4 +124,5 @@ class IronfishData {
     blockchain = new IronfishBlockchainPoolData();
     workers = new IronfishWorkersPoolData();
 }
+exports.IronfishData = IronfishData;
 //# sourceMappingURL=data.js.map

@@ -1,5 +1,9 @@
-sudo mkdir -p data/grafana
-sudo mkdir -p data/prometheus
-sudo mkdir -p data/ironfish
+#!/bin/bash
 
-sudo docker compose -f irnfbundle/docker-compose.yml up -d
+IRONFISH_HOME=/nodes/ironfish
+
+sudo mkdir -p $IRONFISH_HOME/data/grafana
+sudo mkdir -p $IRONFISH_HOME/data/prometheus
+sudo mkdir -p $IRONFISH_HOME/data/ironfish
+
+sudo docker compose -f $IRONFISH_HOME/irnfbundle/docker-compose.yml up -d

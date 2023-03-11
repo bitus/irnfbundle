@@ -1,0 +1,5 @@
+#!/bin/bash
+
+IRONFISH_HOME=/nodes/ironfish
+
+sudo docker compose -f $IRONFISH_HOME/irnfbundle/docker-compose.yml exec -it ironfish $@

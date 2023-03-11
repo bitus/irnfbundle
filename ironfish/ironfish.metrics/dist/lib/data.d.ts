@@ -1,29 +1,31 @@
 export declare class TelemetryData {
-    system: SystemData;
-    ironfish: IronfishData;
-}
-declare class SystemData {
     cpu: CpuData;
     memory: MemoryData;
     disk: DiskData;
     network: NetworkData;
+    ironfish: IronfishData;
+    wallet: IronfishWalletData;
+    assign(item: TelemetryDataItem): void;
 }
-declare class CpuData {
+export declare abstract class TelemetryDataItem {
+}
+export declare class CpuData extends TelemetryDataItem {
     cores: number;
     utilization: number;
     cores_utilization: number[];
 }
-declare class MemoryData {
+export declare class MemoryData extends TelemetryDataItem {
     free: number;
     used: number;
     total: number;
     utilization: number;
 }
-declare class NetworkData {
+export declare class NetworkData extends TelemetryDataItem {
     input: number;
     output: number;
 }
-declare class DiskData {
+export declare class DiskData extends TelemetryDataItem {
+    name: string;
     free: number;
     used: number;
     total: number;
@@ -76,14 +78,14 @@ declare class IronfishWorkersPoolData {
     active: boolean;
     jobs_per_second: number;
 }
-declare class IronfishWalletPoolData {
+export declare class IronfishWalletData extends TelemetryDataItem {
+    address: string;
     balance: number;
 }
-declare class IronfishData {
+export declare class IronfishData extends TelemetryDataItem {
     status: string;
     active: boolean;
     version: IronfishVersionData;
-    wallet: IronfishWalletPoolData;
     memory: IronfishMemoryData;
     cpu: IronfishCpuData;
     p2p: IronfishP2pData;

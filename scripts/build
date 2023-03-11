@@ -1,1 +1,5 @@
-sudo docker compose -f irnfbundle/docker-compose.yml build
+#!/bin/bash
+
+IRONFISH_HOME=/nodes/ironfish
+
+sudo docker compose -f $IRONFISH_HOME/irnfbundle/docker-compose.yml build

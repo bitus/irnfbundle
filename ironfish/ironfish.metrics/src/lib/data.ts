@@ -1,36 +1,60 @@
 
 
 export class TelemetryData {
-    system:SystemData = new SystemData();
-    ironfish:IronfishData = new IronfishData();
-}
-
-class SystemData {
     cpu:CpuData = new CpuData();
     memory:MemoryData = new MemoryData();
     disk:DiskData = new DiskData();
     network:NetworkData = new NetworkData();
+    ironfish:IronfishData = new IronfishData();
+    wallet:IronfishWalletData = new IronfishWalletData();
+
+    assign(item:TelemetryDataItem) {
+        if (item instanceof CpuData) {
+            this.cpu = item;
+        }
+        else if (item instanceof MemoryData) {
+            this.memory = item;
+        }
+        else if (item instanceof DiskData) {
+            this.disk = item;
+        }
+        else if (item instanceof NetworkData) {
+            this.network = item;
+        }
+        else if (item instanceof IronfishData) {
+            this.ironfish = item;
+        }
+        else if (item instanceof IronfishWalletData) {
+            this.wallet = item;
+        }
+
+    }
 }
 
-class CpuData {
+export abstract class TelemetryDataItem {
+
+}
+
+export class CpuData extends TelemetryDataItem {
     cores:number = 0;
     utilization:number = 0.0;
     cores_utilization:number[] = [];
 }
 
-class MemoryData {
+export class MemoryData extends TelemetryDataItem {
     free:number = 0;
     used:number = 0;
     total:number = 0;
     utilization:number = 0;
 }
 
-class NetworkData {
+export class NetworkData extends TelemetryDataItem {
     input:number = 0;
     output:number = 0;
 }
 
-class DiskData {
+export class DiskData extends TelemetryDataItem {
+    name:string;
     free:number = 0;
     used:number = 0;
     total:number = 0;
@@ -93,18 +117,18 @@ class IronfishWorkersPoolData {
     jobs_per_second:number = 0.0;
 }
 
-class IronfishWalletPoolData {
+export class IronfishWalletData extends TelemetryDataItem {
+    address:string;
     balance:number = 0.0;
 }
 
 
 
-class IronfishData {
+export class IronfishData extends TelemetryDataItem {
     status:string = '';
     active:boolean = false;
 
     version:IronfishVersionData = new IronfishVersionData();
-    wallet:IronfishWalletPoolData = new IronfishWalletPoolData();
     memory:IronfishMemoryData = new IronfishMemoryData();
     cpu:IronfishCpuData = new IronfishCpuData();
     p2p:IronfishP2pData = new IronfishP2pData();

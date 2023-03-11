@@ -1,11 +1,9 @@
-cp backup ../../
-cp build ../../
-cp start ../../
-cp stop ../../
-cp update ../../
+#!/bin/bash
 
-chmod +x ../../backup
-chmod +x ../../build
-chmod +x ../../start
-chmod +x ../../stop
-chmod +x ../../update
+IRONFISH_HOME=/nodes/ironfish
+
+cd $IRONFISH_HOME/irnfbundle/scripts
+cp backup build start stop status update update-check ../../
+
+cd $IRONFISH_HOME
+chmod +x backup build start stop status update update-check

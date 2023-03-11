@@ -11,22 +11,23 @@ interface DataMetric {
 let dataMetrics:DataMetric[] = [
 
     { name: 'ironfish.needs_update', reader: (data) => data.ironfish.version.needs_update ? 1 : 0 },
+    { name: 'ironfish.active', reader: (data) => data.ironfish.active ? 1 : 0},
 
-    { name: 'system.cpu.utilization', reader: (data) => data.system.cpu.utilization },
-    { name: 'system.cpu.cores', reader: (data) => data.system.cpu.cores },
+    { name: 'system.cpu.utilization', reader: (data) => data.cpu.utilization },
+    { name: 'system.cpu.cores', reader: (data) => data.cpu.cores },
 
-    { name: 'system.memory.free', reader: (data) => data.system.memory.free},
-    { name: 'system.memory.used', reader: (data) => data.system.memory.used},
-    { name: 'system.memory.total', reader: (data) => data.system.memory.total},
-    { name: 'system.memory.utilization', reader: (data) => data.system.memory.utilization},
+    { name: 'system.memory.free', reader: (data) => data.memory.free},
+    { name: 'system.memory.used', reader: (data) => data.memory.used},
+    { name: 'system.memory.total', reader: (data) => data.memory.total},
+    { name: 'system.memory.utilization', reader: (data) => data.memory.utilization},
 
-    { name: 'system.disk.free', reader: (data) => data.system.disk.free},
-    { name: 'system.disk.used', reader: (data) => data.system.disk.used},
-    { name: 'system.disk.total', reader: (data) => data.system.disk.total},
-    { name: 'system.disk.utilization', reader: (data) => data.system.disk.utilization},
+    { name: 'system.disk.free', reader: (data) => data.disk.free},
+    { name: 'system.disk.used', reader: (data) => data.disk.used},
+    { name: 'system.disk.total', reader: (data) => data.disk.total},
+    { name: 'system.disk.utilization', reader: (data) => data.disk.utilization},
 
-    { name: 'system.network.input', reader: (data) => data.system.network.input},
-    { name: 'system.network.output', reader: (data) => data.system.network.output},
+    { name: 'system.network.input', reader: (data) => data.network.input},
+    { name: 'system.network.output', reader: (data) => data.network.output},
 
     { name: 'ironfish.active', reader: (data) => data.ironfish.active ? 1 : 0},
 
@@ -57,6 +58,8 @@ let dataMetrics:DataMetric[] = [
     { name: 'ironfish.blockchain.since_head', reader: (data) => data.ironfish.blockchain.since_head},
 
     { name: 'ironfish.workers.jobs_per_second', reader: (data) => data.ironfish.workers.jobs_per_second},
+
+    { name: 'ironfish.wallet.balance', reader: (data) => data.wallet.balance},
 ];
 
 interface Metric {

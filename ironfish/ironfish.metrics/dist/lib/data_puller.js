@@ -46,8 +46,8 @@ async function getMetrics() {
     let data = new data_1.TelemetryData();
     for (let cmd of commands) {
         try {
-            let cmdData = await cmd.exec(data);
-            data = appendMetrics(data, cmdData);
+            let cmdData = await cmd.exec();
+            data.assign(cmdData);
         }
         catch (err) {
             console.log(`Error on executing command '${cmd}'`);
@@ -76,6 +76,14 @@ const commands = [
     new command_1.IronfishStatus(),
     new command_1.IronfishAccountBalance()
 ];
+function registerEndpoints(app) {
+    for (let c of commands) {
+        app.get('/output/' + c.name, async (req, res) => {
+            res.setHeader('content-type', 'text/plain');
+            res.send(JSON.stringify(c.exec(), null, 4));
+        });
+    }
+}
 class DataPuller {
     data;
     json;
@@ -84,8 +92,11 @@ class DataPuller {
         exiting = true;
         clearTimer();
     }
-    start() {
+    start(express) {
         setupTimer();
+        if (express) {
+            registerEndpoints(express);
+        }
     }
 }
 exports.puller = new DataPuller();

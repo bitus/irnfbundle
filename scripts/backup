@@ -1,3 +1,9 @@
+#!/bin/bash
+
+IRONFISH_HOME=/nodes/ironfish
+
+cd $IRONFISH_HOME
+
 mkdir backups
 
 D=`date +"%Y-%m-%d-%H-%M-%s"`

@@ -10,6 +10,7 @@ volumes:
       type: 'none'
       o: 'bind'
       device: './../data/prometheus'
+
   data_grafana: 
     driver: local
     driver_opts:
@@ -18,17 +19,21 @@ volumes:
       device: './../data/grafana'
 
 services:
-  ironfish:
+  ironfish_node:
     build:
-      context: ironfish/image
+      context: ironfish
       dockerfile: ./Dockerfile
     image: ironfish-app
     restart: always
-    stdin_open: true 
-    tty: true
-    network_mode: host
     volumes:
       - ./../data/ironfish:/root/.ironfish
+    ports:
+      - 8020:8020
+      - 9033:9033
+      - 22:22
+    networks:
+      - app-tier
+
 
   prometheus:
     image: prom/prometheus
@@ -43,12 +48,17 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-    network_mode: host
+    links:
+      - alertmanager:alertmanager
+    ports:
+      - 9090:9090
+    networks:
+      - app-tier
+
 
   alertmanager:
     image: prom/alertmanager
     restart: always
-    network_mode: host
     volumes:
       - ./prometheus/config/alertmanager:/etc/alertmanager
       - /etc/timezone:/etc/timezone:ro
@@ -56,18 +66,27 @@ services:
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
+    ports:
+      - 9093:9093
+    networks:
+      - app-tier     
+
 
   grafana:
     image: grafana/grafana-enterprise
     restart: always
     user: "472"
-    network_mode: host
     volumes:
       - data_grafana:/var/lib/grafana
       - ./grafana/config/provisioning/:/etc/grafana/provisioning/
       - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/plugins:/var/lib/grafana/plugins
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - ./grafana/config/config.monitoring
+    ports:
+      - 3000:3000
+    networks:
+      - app-tier
  

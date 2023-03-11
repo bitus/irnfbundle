@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { TelemetryData } from "./data";
+import { CpuData, DiskData, IronfishData, IronfishWalletData, MemoryData, NetworkData, TelemetryData, TelemetryDataItem } from "./data";
 
 const debug = false;
 
@@ -107,15 +107,13 @@ export abstract class Command {
         return [];
     }
 
-    async exec(telemetry:TelemetryData): Promise<TelemetryData> {
+    async exec(): Promise<TelemetryDataItem> {
         let output = execShellCommand(this.cmd);
 
-        await this.parse(telemetry, output);
-
-        return telemetry;
+        return await this.parse(output);
     }
 
-    protected abstract parse(telemetry:TelemetryData, data: string): Promise<any>;
+    protected abstract parse(data: string): Promise<TelemetryDataItem>;
 
     toString(): string {
         return `Command '${this.name}'`;
@@ -127,7 +125,7 @@ export class DfCommand extends Command {
         super('df', 'df');
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input);
             if (lines && lines.length) {
@@ -139,17 +137,22 @@ export class DfCommand extends Command {
                         let a = parseInt(s[1]);
                         let u = parseInt(s[2]);
                         if (!isNaN(pcnt) && !isNaN(a) && !isNaN(u)) {
-                            telemetry.system.disk.used = u;
-                            telemetry.system.disk.free = a;
-                            telemetry.system.disk.total = a + u;
-                            telemetry.system.disk.utilization = pcnt;
+                            let res = new DiskData();
+
+                            res.name = '';
+                            res.used = u;
+                            res.free = a;
+                            res.total = a + u;
+                            res.utilization = pcnt;
+
+                            return res;
                         }
                     }
                 }
             }
         }
 
-        return {};
+        return undefined;
     }
 }
 
@@ -158,28 +161,32 @@ export class MpstatCommand extends Command {
         super('mpstat', 'mpstat -P ALL');
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input).slice(3);
             if (lines && lines.length) {
                 let idx = lines[0].indexOf(' all ');
                 if (idx > 0) {
                     let ll = lines.map(x => x.substring(idx).trim().replace(/\s+/gim, ' ').split(' ').slice(0, 2)).filter(x => x.length === 2);
-                    telemetry.system.cpu.cores = ll.length-1;
+                    let res = new CpuData();
+
+                    res.cores = ll.length-1;
                     for (let l of ll) {
                         let n = parseInt(l[0]);
                         let v = parseInt(l[1]);
                         if (isNaN(n)) {
-                            telemetry.system.cpu.utilization = isNaN(v) ? 0.0 : v;
+                            res.utilization = isNaN(v) ? 0.0 : v;
                         } else {
-                            telemetry.system.cpu.cores_utilization.push(isNaN(v) ? 0.0 : v);
+                            res.cores_utilization.push(isNaN(v) ? 0.0 : v);
                         }
                     }
+
+                    return res;
                 }
             }
         }
 
-        return {};
+        return undefined;
     }
 }
 
@@ -188,7 +195,7 @@ export class FreeCommand extends Command {
         super('free', 'free');
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input).slice(1);
             if (lines && lines.length) {
@@ -201,16 +208,20 @@ export class FreeCommand extends Command {
                     .filter(x => !isNaN(x));
 
                 if (ll.length === 3) {
-                    telemetry.system.memory.total = ll[0];
-                    telemetry.system.memory.used = ll[1];
-                    telemetry.system.memory.free = ll[2];
-                    telemetry.system.memory.utilization =
-                        telemetry.system.memory.used * 100 / telemetry.system.memory.total;
+                    let res = new MemoryData();
+
+                    res.total = ll[0];
+                    res.used = ll[1];
+                    res.free = ll[2];
+                    res.utilization =
+                        res.used * 100 / res.total;
+
+                    return res;
                 }
             }
         }
 
-        return {};
+        return undefined;
     }
 
 }
@@ -220,7 +231,7 @@ export class IfstatCommand extends Command {
         super('ifstat', 'ifstat 1 1');
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input).slice(1);
             if (lines && lines.length) {
@@ -228,11 +239,17 @@ export class IfstatCommand extends Command {
                 let h = lines[0].trim().replace(' in', '').replace(' out', '').replace(/\s+/img, ' ').split(' ').slice(0, 2).map(x => x.toUpperCase());
                 let d = lines[1].trim().replace(/\s+/img, ' ').split(' ').slice(0, 2).map(x => parseFloat(x)).filter(x => !isNaN(x));
                 if (h.length === 2 && d.length === 2) {
-                    telemetry.system.network.input = d[0];
-                    telemetry.system.network.output = d[1];
+                    let res = new NetworkData();
+
+                    res.input = d[0];
+                    res.output = d[1];
+
+                    return res;
                 }
             }
         }
+
+        return undefined;
     }
 }
 
@@ -273,31 +290,31 @@ export class IronfishStatus extends Command {
         return '';
     }
 
-    private async parseVersion(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseVersion(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let v = data.split('@')[0].trim();
-            telemetry.ironfish.version.current = v;
+            telemetry.version.current = v;
 
             if (this.dateLatestVersionCheck === undefined || (new Date().valueOf() - this.dateLatestVersionCheck.valueOf())/1000 > 60 * 30) {
                 let lv = await this.getLatestVersion();
 
-                telemetry.ironfish.version.latest = lv;
+                telemetry.version.latest = lv;
             }
 
-            telemetry.ironfish.version.needs_update = telemetry.ironfish.version.current &&
-                telemetry.ironfish.version.latest &&
-                telemetry.ironfish.version.current !== telemetry.ironfish.version.latest;
+            telemetry.version.needs_update = telemetry.version.current &&
+                telemetry.version.latest &&
+                telemetry.version.current !== telemetry.version.latest;
         }
     }
 
-    private async parseStatus(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseStatus(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
-            telemetry.ironfish.status = data;
-            telemetry.ironfish.active = data === 'STARTED';
+            telemetry.status = data;
+            telemetry.active = data === 'STARTED';
         }
     }
 
-    private async parseMemory(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseMemory(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let d = data.split('Free:');
             if (d.length > 1) {
@@ -316,10 +333,10 @@ export class IronfishStatus extends Command {
                         free = toKb(`${free} ${unit}`);
                         total = toKb(`${total} ${unit}`);
 
-                        telemetry.ironfish.memory.free = free;
-                        telemetry.ironfish.memory.total = total;
-                        telemetry.ironfish.memory.used = total - free;
-                        telemetry.ironfish.memory.utilization = 100-freePcnt;
+                        telemetry.memory.free = free;
+                        telemetry.memory.total = total;
+                        telemetry.memory.used = total - free;
+                        telemetry.memory.utilization = 100-freePcnt;
                     }
                 }
 
@@ -327,19 +344,19 @@ export class IronfishStatus extends Command {
         }
     }
 
-    private async parseCpu(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseCpu(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let d = data.split(',').map(x => x.split(':')[1]).filter(x => x !== undefined);
             if (d.length === 2) {
                 let c = parseInt(d[0].trim());
                 let u = parseFloat(d[1].replace('%', '').trim());
-                telemetry.ironfish.cpu.cores = isNaN(c) ? 0 : c;
-                telemetry.ironfish.cpu.utilization = isNaN(u) ? 0.0 : u;
+                telemetry.cpu.cores = isNaN(c) ? 0 : c;
+                telemetry.cpu.utilization = isNaN(u) ? 0.0 : u;
             }
         }
     }
 
-    private async parseP2p(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseP2p(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let d = data.split(',');
             if (d.length === 3) {
@@ -347,56 +364,56 @@ export class IronfishStatus extends Command {
                 let nout = toKb(d[1].split(':').reverse()[0]);
                 let peers = parseInt(d[2].split(' ').reverse()[0]);
 
-                telemetry.ironfish.p2p.status = d[0].trim().split(' ')[0].trim();
-                telemetry.ironfish.p2p.active = telemetry.ironfish.p2p.status === 'CONNECTED';
-                telemetry.ironfish.p2p.input = isNaN(nin) ? 0.0 : nin;
-                telemetry.ironfish.p2p.output = isNaN(nout) ? 0.0 : nout;
-                telemetry.ironfish.p2p.peers = peers;
+                telemetry.p2p.status = d[0].trim().split(' ')[0].trim();
+                telemetry.p2p.active = telemetry.p2p.status === 'CONNECTED';
+                telemetry.p2p.input = isNaN(nin) ? 0.0 : nin;
+                telemetry.p2p.output = isNaN(nout) ? 0.0 : nout;
+                telemetry.p2p.peers = peers;
             }
         }
     }
 
-    private async parseMining(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseMining(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let d = data.split('-');
-            telemetry.ironfish.mining.status = d[0].trim();
-            telemetry.ironfish.mining.active = telemetry.ironfish.mining.status === 'STARTED';
+            telemetry.mining.status = d[0].trim();
+            telemetry.mining.active = telemetry.mining.status === 'STARTED';
 
             if (d[1]) {
                 let mm = d[1].trim().split(',').map(x => parseInt(x.trim().split(' ')[0])).filter(x => !isNaN(x));
                 if (mm.length === 2) {
 
-                    telemetry.ironfish.mining.miners = mm[0];
-                    telemetry.ironfish.mining.mined = mm[1];
+                    telemetry.mining.miners = mm[0];
+                    telemetry.mining.mined = mm[1];
                 }
             }
         }
     }
 
-    private async parseMemPool(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseMemPool(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let dd = data.trim().split(',').map(x => x.trim().split(':')[1]).filter(x => x !== undefined);
             if (dd.length == 2) {
                 let c = parseInt(dd[0].trim().split(' ')[0]);
-                telemetry.ironfish.mem_pool.count = isNaN(c) ? 0 : c;
-                telemetry.ironfish.mem_pool.bytes = toKb(dd[1]);
+                telemetry.mem_pool.count = isNaN(c) ? 0 : c;
+                telemetry.mem_pool.bytes = toKb(dd[1]);
             }
         }
     }
 
-    private async parseSyncer(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseSyncer(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let dd = data.trim().split('-');
             if (dd.length === 2) {
                 let speed = parseFloat(dd[1].trim().split(' ')[0]);
-                telemetry.ironfish.syncer.status = dd[0].trim();
-                telemetry.ironfish.syncer.idle = telemetry.ironfish.syncer.status === 'IDLE';
-                telemetry.ironfish.syncer.speed = isNaN(speed) ? 0.0 : speed;
+                telemetry.syncer.status = dd[0].trim();
+                telemetry.syncer.idle = telemetry.syncer.status === 'IDLE';
+                telemetry.syncer.speed = isNaN(speed) ? 0.0 : speed;
             }
         }
     }
 
-    private async parseBlockchain(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseBlockchain(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let dd = data.split(',');
             if (dd.length === 2) {
@@ -405,29 +422,31 @@ export class IronfishStatus extends Command {
                     let t = parseSeconds(s.split('(')[0].trim());
                     let status = (s.split('(')[1] ?? '').replace(')', '').trim();
 
-                    telemetry.ironfish.blockchain.status = status;
-                    telemetry.ironfish.blockchain.synced = telemetry.ironfish.blockchain.status === 'SYNCED';
-                    telemetry.ironfish.blockchain.since_head = t;
+                    telemetry.blockchain.status = status;
+                    telemetry.blockchain.synced = telemetry.blockchain.status === 'SYNCED';
+                    telemetry.blockchain.since_head = t;
                 }
             }
         }
     }
 
-    private async parseWorkers(telemetry:TelemetryData, data: string): Promise<any> {
+    private async parseWorkers(telemetry:IronfishData, data: string): Promise<any> {
         if (data) {
             let wps = parseFloat(data.split(',').reverse()[0].trim().split(' ')[0]);
 
-            telemetry.ironfish.workers.status = data.split('-')[0].trim();
-            telemetry.ironfish.workers.active = telemetry.ironfish.workers.status === 'STARTED';
-            telemetry.ironfish.workers.jobs_per_second = isNaN(wps) ? 0.0 : wps;
+            telemetry.workers.status = data.split('-')[0].trim();
+            telemetry.workers.active = telemetry.workers.status === 'STARTED';
+            telemetry.workers.jobs_per_second = isNaN(wps) ? 0.0 : wps;
         }
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input);
             if (lines && lines.length) {
                 lines = lines.map(x => x.trim());
+
+                let telemetry = new IronfishData();
 
                 let pieces = {
                     'Version': (v) => this.parseVersion(telemetry, v),
@@ -450,8 +469,12 @@ export class IronfishStatus extends Command {
                         console.log(`Unable to parse IRONFISH ${n} output, ${err}` );
                     }
                 }
+
+                return telemetry;
             }
         }
+
+        return undefined;
     }
 }
 
@@ -460,19 +483,26 @@ export class IronfishAccountBalance extends Command {
         super('ironfish.wallet.balance', 'ironfish wallet:balance');
     }
 
-    async parse(telemetry:TelemetryData, input: string): Promise<any> {
+    async parse(input: string): Promise<TelemetryDataItem> {
         if (input) {
             let lines = this.getLines(input).slice(1);
             if (lines && lines.length) {
                 let l = lines[0].split('IRON ');
                 if (l.length > 1) {
                     let b = Number.parseFloat(String(l[l.length - 1]));
+
                     if (!isNaN(b)) {
-                        telemetry.ironfish.wallet.balance = b;
+                        let res = new IronfishWalletData();
+
+                        res.balance = b;
+
+                        return res;
                     }
                 }
             }
         }
+
+        return undefined;
     }
 }
 

@@ -1,6 +1,7 @@
 import { DfCommand, FreeCommand, IfstatCommand, IronfishAccountBalance, IronfishStatus, MpstatCommand } from "./command";
 import { TelemetryData } from "./data";
 import { metricGenerator } from "./metrics";
+import { Application } from "express";
 
 var timer: NodeJS.Timeout = null;
 var timeout: number = 15 * 1000;
@@ -52,8 +53,9 @@ async function getMetrics() {
 
     for(let cmd of commands) {
         try {
-            let cmdData = await cmd.exec(data);
-            data = appendMetrics(data, cmdData);
+            let cmdData = await cmd.exec();
+            data.assign(cmdData);
+            //data = appendMetrics(data, cmdData);
         }
         catch (err) {
             console.log(`Error on executing command '${cmd}'`);
@@ -91,6 +93,16 @@ const commands = [
     new IronfishAccountBalance()
 ];
 
+function registerEndpoints(app:Application) {
+    for (let c of commands) {
+        app.get('/output/' + c.name, async (req, res) => {
+            res.setHeader('content-type', 'text/plain');
+            res.send(JSON.stringify(c.exec(), null, 4));
+        });
+    }
+
+}
+
 class DataPuller {
     data:any;
     json:string;
@@ -101,8 +113,12 @@ class DataPuller {
         clearTimer();
     }
 
-    start() {
+    start(express?:Application) {
         setupTimer();
+
+        if (express) {
+            registerEndpoints(express);
+        }
     }
 }
 

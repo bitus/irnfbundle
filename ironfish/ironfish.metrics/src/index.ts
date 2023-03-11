@@ -23,6 +23,7 @@ process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
 process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
 const app = express();
+//app.get
 //const port = process.env.PORT || 8765;
 const port = 8765;
 const host = '0.0.0.0';
@@ -56,4 +57,4 @@ app.listen(port, host, () => {
   console.log(`[server]: Server is running at http://${host}:${port}`);
 });
 
-puller.start();
+puller.start(app);

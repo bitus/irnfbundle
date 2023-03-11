@@ -42,5 +42,5 @@ app.get('/json', (req, res) => {
 app.listen(port, host, () => {
     console.log(`[server]: Server is running at http://${host}:${port}`);
 });
-data_puller_1.puller.start();
+data_puller_1.puller.start(app);
 //# sourceMappingURL=index.js.map

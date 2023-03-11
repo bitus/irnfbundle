@@ -1,12 +1,22 @@
-sudo mkdir -p data/grafana
-sudo mkdir -p data/prometheus
-sudo mkdir -p data/ironfish
+#!/bin/bash
+
+IRONFISH_HOME=/nodes/ironfish
+
+cd $IRONFISH_HOME
+
+sudo mkdir -p data/grafana data/prometheus data/ironfish
+
 
 sudo docker compose -f irnfbundle/docker-compose.yml down
+
+
 rm -rf irnfbundle
 git clone https://github.com/bitus/irnfbundle.git
 
-sudo docker pull ghcr.io/iron-fish/ironfish:latest
 
+#sudo docker pull ghcr.io/iron-fish/ironfish:latest
 sudo docker compose -f irnfbundle/docker-compose.yml build
-# docker compose -f irnfbundle/docker-compose.yml up -d
+#docker compose -f irnfbundle/docker-compose.yml up -d
+
+
+bash irnfbundle/scripts/.setup
